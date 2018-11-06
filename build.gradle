@@ -1,0 +1,49 @@
+buildscript {
+    ext {
+        springBootVersion = '2.0.5.RELEASE'
+    }
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+    }
+}
+
+apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'org.springframework.boot'
+apply plugin: 'io.spring.dependency-management'
+
+group = 'com.program'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+
+
+dependencies {
+    compile('org.springframework.boot:spring-boot-starter-data-jpa')
+    compile('org.springframework.boot:spring-boot-starter-jdbc')
+    compile('org.springframework.boot:spring-boot-starter-web')
+    compile('org.springframework.boot:spring-boot-starter-security')
+    compile('org.springframework.boot:spring-boot-starter-data-rest')
+    runtime('org.springframework.boot:spring-boot-devtools')
+    compile('com.mashape.unirest:unirest-java:1.4.9')
+    compile ('com.auth0:auth0-spring-security-api:1.1.0')
+    compile('com.auth0:auth0:1.0.0')
+    compile group: 'io.jsonwebtoken', name: 'jjwt', version: '0.6.0'
+    compile (group: 'org.hibernate', name: 'hibernate-core', version: '5.2.10.Final')
+    compile (group: 'org.hibernate', name: 'hibernate-search-orm', version: '5.7.0.Final')
+    compile (group: 'org.hibernate', name: 'hibernate-entitymanager', version: '5.3.6.Final')
+    compile (group: 'org.hibernate.validator', name: 'hibernate-validator', version: '6.0.13.Final')
+
+
+
+    runtime('mysql:mysql-connector-java')
+    compileOnly('org.projectlombok:lombok')
+    testCompile('org.springframework.boot:spring-boot-starter-test')
+    testCompile('org.springframework.security:spring-security-test')
+}
