@@ -1,9 +1,6 @@
 package com.program.backend.services;
 
-import com.program.backend.beans.entity.Skill;
-import com.program.backend.beans.entity.User;
-import com.program.backend.beans.entity.UserSkill;
-import com.program.backend.beans.entity.UserSkillLevel;
+import com.program.backend.beans.entity.*;
 import com.program.backend.beans.enums.SkillStatus;
 import com.program.backend.beans.enums.Status;
 import com.program.backend.beans.request.AddSkillRequest;
@@ -12,6 +9,7 @@ import com.program.backend.beans.response.user.skill.NonColleagueUserSkillRespon
 import com.program.backend.beans.response.user.skill.UserSkillResponse;
 import com.program.backend.events.UserSkillAddedEvent;
 import com.program.backend.events.UserSkillRemovedEvent;
+import com.program.backend.repositories.TeamRepository;
 import com.program.backend.repositories.UserSkillRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
@@ -34,6 +32,15 @@ public class UserSkillService {
 
     @Autowired
     private UserSkillLevelService userSkillLevelService;
+
+    @Autowired
+    private SkillTemplateService skillTemplateService;
+
+    @Autowired
+    private UserService userService;
+
+    @Autowired
+    private TeamRepository teamRepository;
 
     @Autowired
     private ApplicationEventPublisher applicationEventPublisher;
@@ -73,6 +80,17 @@ public class UserSkillService {
         UserSkillLevel userSkillLevel = getUserSkillLevel(userId, skill);
         UserSkill updatedUserSkill = userSkillRepository.save(userSkillLevel.getUserSkill());
         applicationEventPublisher.publishEvent(new UserSkillAddedEvent(updatedUserSkill));
+        User user = userService.getUserById(userId);
+        if (user.getTeam().isPresent()) {
+            Team team = teamRepository.findTeamById(user.getTeam().get().getId());
+            List<Skill> skills = team.getSkillTemplate().getSkills();
+            skills.add(updatedUserSkill.getSkill());
+            skills = skills.stream()
+                    .distinct().collect(Collectors.toList());
+            team.setSkillTemplate(skillTemplateService.createOrUpdateSkillTemplate(team, skills));
+            teamRepository.save(team);
+        }
+
         return new ColleagueUserSkillResponse(updatedUserSkill.getSkill(), userSkillLevel);
     }
 

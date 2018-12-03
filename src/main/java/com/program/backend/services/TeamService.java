@@ -17,6 +17,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class TeamService {
@@ -67,8 +68,6 @@ public class TeamService {
         Team selectedTeam = getTeamById(id);
         if (user.getRole() == Role.MANAGER) {
             return updateTeamAsManager(selectedTeam, updateTeamRequest);
-        } else if (user.getTeam().isPresent() && user.getRole() == Role.SCRUM_MASTER && user.getTeam().get().equals(selectedTeam)){
-            return updateTeamAsScrumMaster(user, selectedTeam, updateTeamRequest);
         } else throw new RuntimeException("you have no rights to edit the team");
     }
 
@@ -84,7 +83,7 @@ public class TeamService {
         Team currentTeam = getTeamById(teamId);
         List<User> userList = currentTeam.getUsers();
 
-        userList.sort(Comparator.comparing(User::toString));
+        userList.sort(Comparator.comparing(User::getName));
 
         if (user.getTeam().isPresent() && user.getTeam().get().getDepartment().equals(currentTeam.getDepartment())) {
             return new ColleagueTeamOverviewWithUsersResponse(currentTeam,
@@ -101,8 +100,6 @@ public class TeamService {
         User user = userService.getUserById(currentUserId);
         Team team = user.getTeam().orElseThrow(RuntimeException::new);
         List<User> userList = team.getUsers();
-
-//        userList.sort(Comparator.comparing(User::toString));
 
         return new ColleagueTeamOverviewWithUsersResponse(team,
                 userService.getColleagueResponsesFromUsers(userList),
@@ -128,6 +125,11 @@ public class TeamService {
             team.setValueStream(valueStreamService.getValueStreamById(addTeamRequest.getStreamId()));
         }
 
+
+        final List<Long> ids = new LinkedList<>();
+        team.getUsers().forEach(user -> user.getUserSkills().forEach(userSkill -> ids.add(userSkill.getSkill().getId())));
+        addTeamRequest.setSkillIds(ids.stream().distinct().collect(Collectors.toList()));
+
         if (addTeamRequest.getSkillIds() != null) {
             team.setSkillTemplate(skillTemplateService.createOrUpdateSkillTemplate(team, skillService.getSkillsByIds(addTeamRequest.getSkillIds())));
         }
@@ -136,30 +138,6 @@ public class TeamService {
 
         return new TeamWithUsersResponse(teamRepository.save(team),
                 userService.getColleagueResponsesFromUsers(userService.getUsersByIds(addTeamRequest.getUserIds())),
-                getTeamSkillTemplateResponseList(team));
-    }
-
-    private TeamWithUsersResponse updateTeamAsScrumMaster(User scrumMaster, Team team, UpdateTeamRequest updateTeamRequest) {
-        if (getTeamByName(updateTeamRequest.getName()) != null && !team.equals(getTeamByName(updateTeamRequest.getName()))) {
-            throw new RuntimeException("team name already exists");
-        }
-
-        List<User> newUsers = userService.getUsersByIds(updateTeamRequest.getUserIds());
-
-        userService.updateUsersTeamAsScrumMaster(scrumMaster, team, newUsers);
-        team.setName(updateTeamRequest.getName());
-
-        if (updateTeamRequest.getStreamId() != null) {
-            team.setValueStream(valueStreamService.getValueStreamById(updateTeamRequest.getStreamId()));
-        }
-
-        List<Skill> skillsIds = skillService.getSkillsByIds(updateTeamRequest.getSkillIds());
-        team.setSkillTemplate(skillTemplateService.createOrUpdateSkillTemplate(team, skillsIds));
-
-        applicationEventPublisher.publishEvent(new TeamUpdatedEvent(team));
-
-        return new TeamWithUsersResponse(teamRepository.save(team),
-                userService.getColleagueResponsesFromUsers(newUsers),
                 getTeamSkillTemplateResponseList(team));
     }
 

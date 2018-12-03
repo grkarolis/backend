@@ -17,7 +17,6 @@ public class AddTeamRequest {
     @NotNull
     private List<Long> userIds;
 
-    @NotNull
     private List<Long> skillIds;
 
     private Long streamId;

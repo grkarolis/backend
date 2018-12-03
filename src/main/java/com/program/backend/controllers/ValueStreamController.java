@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @Component
 @CrossOrigin(origins = "*")
-@RequestMapping(value = "/stream")
+@RequestMapping(value = "/valuestream")
 public class ValueStreamController {
 
     @Autowired

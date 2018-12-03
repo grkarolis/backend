@@ -15,10 +15,7 @@ import com.program.backend.services.TeamService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -96,19 +93,10 @@ public class UserService {
             removeAllUsersFromTeam(team);
         }
 
-        if (newUsers.stream().filter(user -> user.getRole() == Role.SCRUM_MASTER).count() > 0 && team.getUsers() != null)
-            removeScrumMasterFromTeam(team);
-
         Set<Team> oldTeams = teamService.getUsersTeams(newUsers);
         addTeamsToNewUsers(team, newUsers);
         team.setUsers(newUsers);
         teamService.updateTeams(oldTeams);
-    }
-
-    private void removeScrumMasterFromTeam(Team team) {
-        List<User> scrumMasters = team.getUsers().stream().filter(user -> user.getRole() == Role.SCRUM_MASTER).collect(Collectors.toList());
-        if (!scrumMasters.isEmpty())
-            removeUsersFromTeam(team, scrumMasters);
     }
 
     private void removeUsersFromTeam(Team team, Iterable<User> users) {
@@ -137,17 +125,11 @@ public class UserService {
         return users.stream().map(UserResponse::new).collect(Collectors.toList());
     }
 
-    public void updateUsersTeamAsScrumMaster(User scrumMaster, Team team, List<User> newUsers) {
-        if (scrumMaster.getRole() == Role.SCRUM_MASTER) {
-            if (newUsers.contains(scrumMaster)){
-                if (team.getUsers() != null) {
-                    team.getUsers().removeAll(newUsers);
-                    removeAllUsersFromTeam(team);
-                }
-                addTeamsToNewUsers(team, newUsers);
-                team.setUsers(newUsers);
-            } else throw new RuntimeException("you can not delete yourself from the team");
-        } else throw new RuntimeException("you are not a scrum master");
+    public List<UserResponse> getAllTeamlessUserResponses() {
+        List<User> users =(List<User>) userRepository.findAll();
+        return users.stream()
+                .filter(u -> !u.getTeam().isPresent())
+                .map(UserResponse::new).collect(Collectors.toList());
     }
 
     public Set<UserResponse> getNonColleagueResponsesFromDepartment(Department department) {

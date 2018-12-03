@@ -47,6 +47,12 @@ public class UserController {
         return userService.getAllUserResponses();
     }
 
+    @RequestMapping(value = "/teamless", method = RequestMethod.GET)
+    public @ResponseBody
+    List<UserResponse> getAllTeamlessUsers() {
+        return userService.getAllTeamlessUserResponses();
+    }
+
     @RequestMapping(value = "/search", method = RequestMethod.GET)
     public List<UserResponse> searchColleagues(Long userId, String query) {
         return searchService.searchColleagues(userId, query);
