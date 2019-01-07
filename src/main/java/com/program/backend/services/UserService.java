@@ -53,12 +53,6 @@ public class UserService {
         return users;
     }
 
-    public UserResponse getUserProfile(Long requiredUserId, Long correctUserId) {
-        User currentUser = getUserById(correctUserId);
-        User requiredUser = getUserById(requiredUserId);
-        return getUserResponseBasedOnDepartment(currentUser, requiredUser);
-    }
-
     public UserResponse getMyProfile(Long userId) {
         User currentUser = getUserById(userId);
         return new UserWithSkillResponse(currentUser,userSkillService.getProfileUserSkills(currentUser.getActiveUserSkills()));
@@ -99,18 +93,9 @@ public class UserService {
         teamService.updateTeams(oldTeams);
     }
 
-    private void removeUsersFromTeam(Team team, Iterable<User> users) {
-        users.forEach(user -> {
-            team.getUsers().remove(user);
-            user.setTeam(null);
-        });
-        userRepository.saveAll(team.getUsers());
-    }
-
     private void removeAllUsersFromTeam(Team team) {
-        team.getUsers().forEach(user -> {
-            user.setTeam(null);
-        });
+        team.getUsers().forEach(user ->
+            user.setTeam(null));
         team.getUsers().clear();
         userRepository.saveAll(team.getUsers());
     }

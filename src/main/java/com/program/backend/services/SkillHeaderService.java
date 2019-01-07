@@ -1,6 +1,7 @@
 package com.program.backend.services;
 
 import com.program.backend.beans.entity.SkillHeader;
+import com.program.backend.beans.response.SkillHeaderResponse;
 import com.program.backend.repositories.SkillHeaderRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -21,9 +22,9 @@ public class SkillHeaderService {
         return skillHeader;
     }
 
-    public Iterable<String> getAllSkillHeaderTitles() {
-        List<String> list = new LinkedList<>();
-        getAllSkillHeaders().iterator().forEachRemaining(skillHeader -> list.add(skillHeader.getTitle()));
+    public List<SkillHeaderResponse> getAllSkillHeaderTitles() {
+        List<SkillHeaderResponse> list = new LinkedList<>();
+        getAllSkillHeaders().iterator().forEachRemaining(skillHeader -> list.add(new SkillHeaderResponse(skillHeader)));
         return list;
     }
 

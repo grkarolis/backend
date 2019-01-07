@@ -1,10 +1,13 @@
 package com.program.backend.controllers;
 
 import com.program.backend.beans.response.SkillEntityResponse;
+import com.program.backend.beans.response.SkillHeaderResponse;
 import com.program.backend.services.SkillHeaderService;
 import com.program.backend.services.SkillService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @CrossOrigin(origins = "*")
@@ -30,7 +33,7 @@ public class SkillController {
 
     @RequestMapping(value = "/header", method = RequestMethod.GET)
     public @ResponseBody
-    Iterable<String> getSkillHeaders() {
+    List<SkillHeaderResponse> getSkillHeaders() {
         return skillHeaderService.getAllSkillHeaderTitles();
     }
 }
